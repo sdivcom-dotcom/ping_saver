@@ -1,9 +1,7 @@
 from pythonping import ping
 import argparse
 import json
-import pandas as pd
 from datetime import datetime
-import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description="")
@@ -45,6 +43,12 @@ parser.add_argument('-cycle', '--cycle',
                     default=1000,
                     type=int)
 
+parser.add_argument('-mode', '--mode',
+                    dest='mode',
+                    help='mode',
+                    default=2,
+                    type=int)
+
 args = parser.parse_args()
 address_1 = args.address_1
 address_2 = args.address_2
@@ -52,6 +56,7 @@ address_3 = args.address_3
 address_4 = args.address_4
 address_5 = args.address_5
 cycle = args.cycle
+mode = args.mode
 
 
 def pinger(addr, size, count):
@@ -148,40 +153,55 @@ def main(address_1, address_2, address_3, address_4, address_5):
     filename_5 = address_5.replace('.','_')
     response_mass = pinger(address_1, size, count)
     add_data_to_json(filename_1, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
+    print("ping_address =", filename_1, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
     response_mass = pinger(address_2, size, count)
     add_data_to_json(filename_2, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
+    print("ping_address =", filename_2, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
     response_mass = pinger(address_3, size, count)
     add_data_to_json(filename_3, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
+    print("ping_address =", filename_3, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
     response_mass = pinger(address_4, size, count)
     add_data_to_json(filename_4, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
+    print("ping_address =", filename_4, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
     response_mass = pinger(address_5, size, count)
     add_data_to_json(filename_5, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
+    print("ping_address =", filename_5, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
 
+if mode == 1:
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    i = 0
+    while i < cycle:
+        main(address_1, address_2, address_3, address_4, address_5)
+        print(i)
+        i = i + 1
 
+    filename_1 = address_1.replace('.','_')
+    data = load_data_from_json(filename_1)
+    plot_data(data, filename_1)
 
+    filename_2 = address_2.replace('.','_')
+    data = load_data_from_json(filename_2)
+    plot_data(data, filename_2)
 
-i = 0
-while i < cycle:
-    main(address_1, address_2, address_3, address_4, address_5)
-    print(i)
-    i = i + 1
+    filename_3 = address_3.replace('.','_')
+    data = load_data_from_json(filename_3)
+    plot_data(data, filename_3)
 
-filename_1 = address_1.replace('.','_')
-data = load_data_from_json(filename_1)
-plot_data(data, filename_1)
+    filename_4 = address_4.replace('.','_')
+    data = load_data_from_json(filename_4)
+    plot_data(data, filename_4)
 
-filename_2 = address_2.replace('.','_')
-data = load_data_from_json(filename_2)
-plot_data(data, filename_2)
+    filename_5 = address_5.replace('.','_')
+    data = load_data_from_json(filename_5)
+    plot_data(data, filename_5)
 
-filename_3 = address_3.replace('.','_')
-data = load_data_from_json(filename_3)
-plot_data(data, filename_3)
+elif mode == 2:
+    i = 0
+    while i < cycle:
+        main(address_1, address_2, address_3, address_4, address_5)
+        print(i)
+        i = i + 1
 
-filename_4 = address_4.replace('.','_')
-data = load_data_from_json(filename_4)
-plot_data(data, filename_4)
-
-filename_5 = address_5.replace('.','_')
-data = load_data_from_json(filename_5)
-plot_data(data, filename_5)
+else:
+    pass
