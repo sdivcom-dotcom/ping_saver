@@ -49,6 +49,12 @@ parser.add_argument('-mode', '--mode',
                     default=2,
                     type=int)
 
+parser.add_argument('-name_mass', '--name_mass',
+                    dest='name_mass',
+                    help='name_mass',
+                    default=["bbc_com", "google_com", "rbc_ru", "reddit_com", "ya_ru"],
+                    type=list)
+
 args = parser.parse_args()
 address_1 = args.address_1
 address_2 = args.address_2
@@ -57,7 +63,7 @@ address_4 = args.address_4
 address_5 = args.address_5
 cycle = args.cycle
 mode = args.mode
-
+name_mass = args.name_mass
 
 def pinger(addr, size, count):
     response_list = ping(addr, size, count)
@@ -202,6 +208,24 @@ elif mode == 2:
         main(address_1, address_2, address_3, address_4, address_5)
         print(i)
         i = i + 1
+elif mode == 3:
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    data = load_data_from_json(name_mass[0])
+    plot_data(data, name_mass[0])
+
+    data = load_data_from_json(name_mass[1])
+    plot_data(data, name_mass[1])
+
+    data = load_data_from_json(name_mass[2])
+    plot_data(data, name_mass[2])
+
+    data = load_data_from_json(name_mass[3])
+    plot_data(data, name_mass[3])
+
+    data = load_data_from_json(name_mass[4])
+    plot_data(data, name_mass[4])
+
 
 else:
     pass
