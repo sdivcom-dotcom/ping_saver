@@ -2,7 +2,7 @@ from pythonping import ping
 import argparse
 import json
 from datetime import datetime
-
+import requests
 
 parser = argparse.ArgumentParser(description="")
 
@@ -40,7 +40,7 @@ parser.add_argument('-address_5', '--address_5',
 parser.add_argument('-cycle', '--cycle',
                     dest='cycle',
                     help='cycle',
-                    default=1000,
+                    default=10,
                     type=int)
 
 parser.add_argument('-mode', '--mode',
@@ -71,6 +71,21 @@ def pinger(addr, size, count):
     return response_mass
 
 
+def elapsed_seconds(site, cycle):
+    site = "https://" + site
+    i = 0
+    response_list = []
+    while i < cycle:
+        response = requests.get(site).elapsed.total_seconds()
+        response_list.append(response)
+        i = i + 1
+    max_cycle = max(response_list)
+    min_cycle = min(response_list)
+    avg_cycle = sum(response_list) / len(response_list)
+    response_mass = [avg_cycle, max_cycle, min_cycle]
+    return response_mass
+
+
 def load_data_from_json(filename):
     filename = filename + ".json"
     with open(filename, 'r') as file:
@@ -90,8 +105,7 @@ def what_day():
 
 
 
-def add_data_to_json(filename, avg, max, min, loss, date=None):
-    #times = what_day()
+def add_data_to_json(filename, avg, max, min, loss, site_post_avg, site_post_max, site_post_min, date=None):
     filename = filename + ".json"
     if date is None:
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -107,6 +121,9 @@ def add_data_to_json(filename, avg, max, min, loss, date=None):
         "max": max,
         "min": min,
         "loss": loss,
+        "site_post_avg": site_post_avg, 
+        "site_post_max": site_post_max,
+        "site_post_min": site_post_min,
     }
 
     existing_data.append(new_data)
@@ -147,31 +164,56 @@ def plot_data(data, address):
     name = address + '_loss.png'
     plt.savefig(name)
     plt.clf()
-
+    plt.plot(df['data'].to_numpy(), df['site_post_avg'].to_numpy())
+    plt.title('site_post_avg vs. Data')
+    plt.xlabel('Date and Time')
+    plt.ylabel('site_post_avg')
+    name = address + '_site_post_avg.png'
+    plt.savefig(name)
+    plt.clf()
+    plt.plot(df['data'].to_numpy(), df['site_post_max'].to_numpy())
+    plt.title('site_post_max vs. Data')
+    plt.xlabel('Date and Time')
+    plt.ylabel('site_post_max')
+    name = address + '_site_post_max.png'
+    plt.savefig(name)
+    plt.clf()
+    plt.plot(df['data'].to_numpy(), df['site_post_min'].to_numpy())
+    plt.title('site_post_min vs. Data')
+    plt.xlabel('Date and Time')
+    plt.ylabel('site_post_min')
+    name = address + '_site_post_min.png'
+    plt.savefig(name)
+    plt.clf()
 
 def main(address_1, address_2, address_3, address_4, address_5):
     size = 40
-    count = 100
+    count = 10
     filename_1 = address_1.replace('.','_')
     filename_2 = address_2.replace('.','_')
     filename_3 = address_3.replace('.','_')
     filename_4 = address_4.replace('.','_')
     filename_5 = address_5.replace('.','_')
     response_mass = pinger(address_1, size, count)
-    add_data_to_json(filename_1, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
-    print("ping_address =", filename_1, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
+    response_mass2 = elapsed_seconds(address_1, count)
+    add_data_to_json(filename_1, response_mass[0], response_mass[1], response_mass[2], response_mass[3], 
+                     response_mass2[0], response_mass2[1], response_mass2[2], date=None)
     response_mass = pinger(address_2, size, count)
-    add_data_to_json(filename_2, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
-    print("ping_address =", filename_2, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
+    response_mass2 = elapsed_seconds(address_2, count)
+    add_data_to_json(filename_2, response_mass[0], response_mass[1], response_mass[2], response_mass[3], 
+                     response_mass2[0], response_mass2[1], response_mass2[2], date=None)
     response_mass = pinger(address_3, size, count)
-    add_data_to_json(filename_3, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
-    print("ping_address =", filename_3, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
+    response_mass2 = elapsed_seconds(address_3, count)
+    add_data_to_json(filename_3, response_mass[0], response_mass[1], response_mass[2], response_mass[3], 
+                     response_mass2[0], response_mass2[1], response_mass2[2], date=None)
     response_mass = pinger(address_4, size, count)
-    add_data_to_json(filename_4, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
-    print("ping_address =", filename_4, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
+    response_mass2 = elapsed_seconds(address_4, count)
+    add_data_to_json(filename_4, response_mass[0], response_mass[1], response_mass[2], response_mass[3], 
+                     response_mass2[0], response_mass2[1], response_mass2[2], date=None)
     response_mass = pinger(address_5, size, count)
-    add_data_to_json(filename_5, response_mass[0], response_mass[1], response_mass[2], response_mass[3], date=None)
-    print("ping_address =", filename_5, "ping_min =", response_mass[0], "ping_max =", response_mass[1], "ping_avg =", response_mass[2], "ping_lost =", response_mass[3])
+    response_mass2 = elapsed_seconds(address_5, count)
+    add_data_to_json(filename_5, response_mass[0], response_mass[1], response_mass[2], response_mass[3], 
+                     response_mass2[0], response_mass2[1], response_mass2[2], date=None)
 
 if mode == 1:
     import pandas as pd
